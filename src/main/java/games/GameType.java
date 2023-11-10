@@ -2,6 +2,10 @@ package games;
 
 import core.*;
 import core.rules.AbstractRuleBasedForwardModel;
+import games.saboteur.SaboteurForwardModel;
+import games.saboteur.gui.SaboteurGUIManager;
+import games.saboteur.SaboteurGameParameters;
+import games.saboteur.SaboteurGameState;
 import games.battlelore.*;
 import games.battlelore.gui.BattleloreGUI;
 import games.blackjack.*;
@@ -206,8 +210,11 @@ public enum GameType {
     ChineseCheckers(2, 6,
             Arrays.asList(Strategy, Abstract),
             Arrays.asList(GridMovement),
-            CCGameState.class, CCForwardModel.class, CCParameters.class, CCGUIManager.class);
-
+            CCGameState.class, CCForwardModel.class, CCParameters.class, CCGUIManager.class),
+    Saboteur(3,11,
+            Arrays.asList(Strategy, Bluffing),
+            Arrays.asList(GridMovement),
+            SaboteurGameState.class, SaboteurForwardModel.class, SaboteurGameParameters.class, SaboteurGUIManager.class);
 
     // Core classes where the game is defined
     final Class<? extends AbstractGameState> gameStateClass;
