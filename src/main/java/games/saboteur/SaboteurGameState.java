@@ -4,6 +4,7 @@ import core.AbstractGameState;
 import core.AbstractParameters;
 import core.components.Component;
 import core.components.Deck;
+import core.components.GridBoard;
 import games.GameType;
 import games.saboteur.components.*;
 
@@ -13,12 +14,15 @@ import java.util.Objects;
 
 public class SaboteurGameState extends AbstractGameState
 {
-    List<Deck<SaboteurCard>> playerDecks;
+    List<Deck<? extends SaboteurCard>> playerDecks;
     List<Deck<ActionCard>> brokenToolDecks;
-    Deck<SaboteurCard> drawDeck;
-    Deck<SaboteurCard> discardDeck;
+    Deck<? extends SaboteurCard> drawDeck;
+    Deck<? extends SaboteurCard> discardDeck;
     Deck<PathCard> goalDeck;
-    Deck<RoleCard> roleDeck; // add list for roles as well due to visibility when copying
+    Deck<SaboteurCard> roleDeck; // add list for roles as well due to visibility when copying
+    GridBoard<PathCard> gridBoard;
+    int centerOfGrid;
+    int[] playerScore;
 
 
     public SaboteurGameState(AbstractParameters parameters, int nPlayers)
@@ -52,7 +56,7 @@ public class SaboteurGameState extends AbstractGameState
         SaboteurGameState copy = new SaboteurGameState(gameParameters.copy(), getNPlayers());
 
         //copying playerDecks
-        for(Deck<SaboteurCard> playerDeck : playerDecks)
+        for(Deck<? extends SaboteurCard> playerDeck : playerDecks)
         {
             copy.playerDecks.add(playerDeck.copy());
         }
@@ -93,6 +97,7 @@ public class SaboteurGameState extends AbstractGameState
                 Objects.equals(drawDeck,that.drawDeck) &&
                 Objects.equals(discardDeck,that.discardDeck) &&
                 Objects.equals(goalDeck,that.goalDeck) &&
-                Objects.equals(roleDeck,that.roleDeck);
+                Objects.equals(roleDeck,that.roleDeck) &&
+                Objects.equals(gridBoard,that.gridBoard);
     }
 }

@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 public class ActionCard extends SaboteurCard
 {
-    final ActionTypeCard actionType;
-    final ToolCardType[] toolTypes;
+    public final ActionTypeCard actionType;
+    public final ToolCardType[] toolTypes;
 
     public enum ToolCardType
     {
@@ -34,6 +34,13 @@ public class ActionCard extends SaboteurCard
         super(SaboteurCardType.Action);
         this.actionType = actionType;
         this.toolTypes = toolTypes;
+    }
+
+    public ActionCard(ActionTypeCard actionType, ToolCardType toolTypes)
+    {
+        super(SaboteurCardType.Action);
+        this.actionType = actionType;
+        this.toolTypes = new ToolCardType[] {toolTypes};
     }
 
     @Override

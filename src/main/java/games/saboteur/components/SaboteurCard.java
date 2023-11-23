@@ -4,6 +4,7 @@ import core.components.Card;
 
 public class SaboteurCard extends Card
 {
+    public SaboteurCardType type;
     public enum SaboteurCardType
     {
         Path,
@@ -15,5 +16,6 @@ public class SaboteurCard extends Card
     public SaboteurCard (SaboteurCardType type)
     {
         super(type.toString());
+        this.type = type;
     }
 }

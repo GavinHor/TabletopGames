@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class PathCard extends SaboteurCard
 {
     final boolean[] directions;
-    final PathCardType type;
+    final public PathCardType type;
     static int nOfTreasures = 1;
     final boolean hasTreasure;
 
@@ -30,6 +30,25 @@ public class PathCard extends SaboteurCard
         else
         {
             hasTreasure = false;
+        }
+    }
+
+    public void rotate()
+    {
+        //up down
+        CompareAndSwap(0,1);
+
+        //left right
+        CompareAndSwap(2,3);
+    }
+
+    private void CompareAndSwap(int indexA, int indexB)
+    {
+        if(directions[indexA] != directions[indexB])
+        {
+            boolean temp = directions[indexA];
+            directions[indexA] = directions[indexB];
+            directions[indexB] = temp;
         }
     }
 

@@ -211,7 +211,7 @@ public enum GameType {
             Arrays.asList(Strategy, Abstract),
             Arrays.asList(GridMovement),
             CCGameState.class, CCForwardModel.class, CCParameters.class, CCGUIManager.class),
-    Saboteur(3,11,
+    Saboteur(4,11,
             Arrays.asList(Strategy, Bluffing),
             Arrays.asList(GridMovement),
             SaboteurGameState.class, SaboteurForwardModel.class, SaboteurGameParameters.class, SaboteurGUIManager.class);
