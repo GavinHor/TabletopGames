@@ -11,7 +11,7 @@ public class ActionCard extends SaboteurCard
     {
         MineCart,
         Lantern,
-        Pickaxe,
+        Pickaxe
     }
 
     public enum ActionTypeCard
@@ -19,7 +19,7 @@ public class ActionCard extends SaboteurCard
         RockFall,
         BrokenTools,
         FixTools,
-        Map,
+        Map
     }
 
     public ActionCard(ActionTypeCard actionType)

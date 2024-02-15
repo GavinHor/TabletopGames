@@ -6,6 +6,7 @@ import games.saboteur.components.ActionCard;
 import games.saboteur.components.PathCard;
 import games.saboteur.components.RoleCard;
 import games.saboteur.components.SaboteurCard;
+import utilities.Vector2D;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,24 +16,19 @@ import java.util.Objects;
 public class SaboteurGameParameters extends TunableParameters
 {
     public int nPlayers          = 5;
-    public int nNuggets          = 27; //nOfNuggetCards not total sum of nuggets
-    public int nPathCards        = 44;
+    public int nNuggets          = 27;
     public int nGoalCards        = 3;
-    public int nBrokenToolCards  = 9;
-    public int nRepairCards      = 9;
-    public int nRockFallCards    = 1;
-    public int nMapCards         = 1;
     public int nRounds           = 3;
     public int GridSize          = 37;
     public int GoalSpacingX      = 8;
     public int GoalSpacingY      = 1;
-    //map combination specific cards to number of cards in that deck
-    //map for nMiners and nSaboteurs for number of players
 
+    //map combination of specific cards to number of cards in that deck
     public Map<SaboteurCard, Integer> pathCardDeck= new HashMap<>();
     public Map<SaboteurCard, Integer> roleCardDeck = new HashMap<>();
     public Map<SaboteurCard, Integer> actionCardDeck = new HashMap<>();
     public Map<SaboteurCard, Integer> goalCardDeck = new HashMap<>();
+    public Map<SaboteurCard, Integer> goldNuggetDeck = new HashMap<>();
 
     public SaboteurGameParameters (long seed)
     {
@@ -54,6 +50,10 @@ public class SaboteurGameParameters extends TunableParameters
         //All Path type cards in a deck excluding goal and start card
         PathCard.PathCardType edge = PathCard.PathCardType.Edge;
         PathCard.PathCardType path = PathCard.PathCardType.Path;
+        Vector2D up = new Vector2D(0,1);
+        Vector2D down = new Vector2D(0,-1);
+        Vector2D left = new Vector2D(1,0);
+        Vector2D right = new Vector2D(-1,0);
 
         pathCardDeck.put(new PathCard(edge, new boolean[]{false, true , false, false}), 1);
         pathCardDeck.put(new PathCard(edge, new boolean[]{false, false, true , false}), 1);
@@ -140,8 +140,6 @@ public class SaboteurGameParameters extends TunableParameters
 
         actionCardDeck.put(new ActionCard(map), 1);
         actionCardDeck.put(new ActionCard(rockFall), 1);
-
-
     }
 
     @Override
@@ -150,12 +148,7 @@ public class SaboteurGameParameters extends TunableParameters
         SaboteurGameParameters sgp = new SaboteurGameParameters(System.currentTimeMillis());
         sgp.nPlayers = nPlayers;
         sgp.nNuggets = nNuggets;
-        sgp.nPathCards = nPathCards;
         sgp.nGoalCards = nGoalCards;
-        sgp.nBrokenToolCards = nBrokenToolCards;
-        sgp.nRepairCards = nRepairCards;
-        sgp.nRockFallCards = nRockFallCards;
-        sgp.nMapCards = nMapCards;
         sgp.nRounds = nRounds;
         sgp.GridSize = GridSize;
         sgp.GoalSpacingY = GoalSpacingY;
@@ -171,12 +164,7 @@ public class SaboteurGameParameters extends TunableParameters
         SaboteurGameParameters that = (SaboteurGameParameters) o;
         return nPlayers == that.nPlayers &&
                 nNuggets == that.nNuggets &&
-                nPathCards == that.nPathCards &&
                 nGoalCards == that.nGoalCards &&
-                nBrokenToolCards == that.nBrokenToolCards &&
-                nRepairCards == that.nRepairCards &&
-                nRockFallCards == that.nRockFallCards &&
-                nMapCards == that.nMapCards &&
                 nRounds == that.nRounds &&
                 GridSize == that.GridSize &&
                 GoalSpacingX == that.GoalSpacingX &&
@@ -195,12 +183,7 @@ public class SaboteurGameParameters extends TunableParameters
     {
         nPlayers = (int) getParameterValue("nPlayers");
         nNuggets = (int) getParameterValue("nNuggets");
-        nPathCards = (int) getParameterValue("nPathCards");
         nGoalCards = (int) getParameterValue("nGoalCards");
-        nBrokenToolCards = (int) getParameterValue("nBrokenToo");
-        nRepairCards = (int) getParameterValue("nRepairCar");
-        nRockFallCards = (int) getParameterValue("nRockFallC");
-        nMapCards = (int) getParameterValue("nMapCards");
         nRounds = (int) getParameterValue("nRounds");
         GridSize = (int) getParameterValue("GridSize");
         GoalSpacingX = (int) getParameterValue("GoalSpacingX");
@@ -212,12 +195,7 @@ public class SaboteurGameParameters extends TunableParameters
         return Objects.hash(super.hashCode(),
                 nPlayers,
                 nNuggets,
-                nPathCards,
                 nGoalCards,
-                nBrokenToolCards,
-                nRepairCards,
-                nRockFallCards,
-                nMapCards,
                 nRounds,
                 GridSize,
                 GoalSpacingX,

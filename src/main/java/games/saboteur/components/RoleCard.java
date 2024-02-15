@@ -1,7 +1,7 @@
 package games.saboteur.components;
 
-public class RoleCard extends SaboteurCard{
-
+public class RoleCard extends SaboteurCard
+{
     public final RoleCardType type;
 
     public enum RoleCardType

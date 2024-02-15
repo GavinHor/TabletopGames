@@ -831,7 +831,8 @@ public class Game {
         ArrayList<AbstractPlayer> players = new ArrayList<>();
         players.add(new RandomPlayer());
         players.add(new RandomPlayer());
-        players.add(new BasicMCTSPlayer());
+        players.add(new RandomPlayer());
+        players.add(new RandomPlayer());
 
 //        RMHCParams params = new RMHCParams();
 //        params.horizon = 15;

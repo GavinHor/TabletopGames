@@ -5,6 +5,7 @@ import core.components.Card;
 public class SaboteurCard extends Card
 {
     public SaboteurCardType type;
+    public int nOfNuggets;
     public enum SaboteurCardType
     {
         Path,
@@ -17,5 +18,13 @@ public class SaboteurCard extends Card
     {
         super(type.toString());
         this.type = type;
+        this.nOfNuggets = 0;
+    }
+
+    public SaboteurCard (int nOfNuggets)
+    {
+        super(SaboteurCardType.GoldNugget.toString());
+        this.type = SaboteurCardType.GoldNugget;
+        this.nOfNuggets = nOfNuggets;
     }
 }

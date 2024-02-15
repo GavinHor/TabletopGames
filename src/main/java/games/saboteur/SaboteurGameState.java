@@ -4,23 +4,23 @@ import core.AbstractGameState;
 import core.AbstractParameters;
 import core.components.Component;
 import core.components.Deck;
-import core.components.GridBoard;
+import core.components.PartialObservableDeck;
 import games.GameType;
 import games.saboteur.components.*;
+import utilities.Vector2D;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class SaboteurGameState extends AbstractGameState
 {
-    List<Deck<? extends SaboteurCard>> playerDecks;
-    List<Deck<ActionCard>> brokenToolDecks;
-    Deck<? extends SaboteurCard> drawDeck;
-    Deck<? extends SaboteurCard> discardDeck;
-    Deck<PathCard> goalDeck;
-    Deck<SaboteurCard> roleDeck; // add list for roles as well due to visibility when copying
-    GridBoard<PathCard> gridBoard;
+    public List<Deck<SaboteurCard>> playerDecks;
+    public List<Deck<SaboteurCard>> brokenToolDecks;
+    Deck<SaboteurCard> drawDeck;
+    PartialObservableDeck<SaboteurCard> discardDeck;
+    Deck<SaboteurCard> goalDeck;
+    PartialObservableDeck<SaboteurCard> roleDeck; // add list for roles as well due to visibility when copying
+    public PartialObservableGridBoard<PathCard> gridBoard;
+    public List<Vector2D> pathCardOptions;
     int centerOfGrid;
     int[] playerScore;
 
@@ -56,13 +56,13 @@ public class SaboteurGameState extends AbstractGameState
         SaboteurGameState copy = new SaboteurGameState(gameParameters.copy(), getNPlayers());
 
         //copying playerDecks
-        for(Deck<? extends SaboteurCard> playerDeck : playerDecks)
+        for(Deck<SaboteurCard> playerDeck : playerDecks)
         {
             copy.playerDecks.add(playerDeck.copy());
         }
 
         //copying brokenToolsDeck
-        for(Deck<ActionCard> currentDeck : brokenToolDecks)
+        for(Deck<SaboteurCard> currentDeck : brokenToolDecks)
         {
             copy.brokenToolDecks.add(currentDeck.copy());
         }

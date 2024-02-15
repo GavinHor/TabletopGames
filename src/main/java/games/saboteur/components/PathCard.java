@@ -1,7 +1,8 @@
 package games.saboteur.components;
 
-import java.util.Arrays;
+import org.apache.poi.ss.formula.atp.Switch;
 
+import java.util.Arrays;
 public class PathCard extends SaboteurCard
 {
     final boolean[] directions;
@@ -22,7 +23,7 @@ public class PathCard extends SaboteurCard
         super(SaboteurCardType.Path);
         this.type = type;
         this.directions = direction;
-        if(type == PathCardType.Goal && nOfTreasures < 1)
+        if(type == PathCardType.Goal && nOfTreasures > 0)
         {
             hasTreasure = true;
             nOfTreasures -= 1;
@@ -33,25 +34,37 @@ public class PathCard extends SaboteurCard
         }
     }
 
-    public void rotate()
+    public void Rotate()
     {
         //up down
-        CompareAndSwap(0,1);
-
+        Swap(0,1);
         //left right
-        CompareAndSwap(2,3);
+        Swap(2,3);
     }
 
-    private void CompareAndSwap(int indexA, int indexB)
+    private void Swap(int indexA, int indexB)
     {
-        if(directions[indexA] != directions[indexB])
-        {
-            boolean temp = directions[indexA];
-            directions[indexA] = directions[indexB];
-            directions[indexB] = temp;
-        }
+        boolean temp = directions[indexA];
+        directions[indexA] = directions[indexB];
+        directions[indexB] = temp;
     }
 
+    public boolean[] getDirections() {return directions;}
+    public int getOppositeDirection(int direction)
+    {
+        switch(direction)
+        {
+            case 0:
+                return 1;
+            case 1:
+                return 0;
+            case 2:
+                return 3;
+            case 3:
+                return 2;
+        }
+        return -1;
+    }
     @Override
     public String toString()
     {
