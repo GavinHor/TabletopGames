@@ -5,20 +5,19 @@ import core.actions.AbstractAction;
 import core.components.Deck;
 import games.saboteur.SaboteurGameState;
 import games.saboteur.components.ActionCard;
-import games.saboteur.components.PathCard;
 import games.saboteur.components.SaboteurCard;
 import utilities.Vector2D;
-
-import javax.swing.*;
 
 public class PlayMapCard extends AbstractAction {
 
     Vector2D position;
     ActionCard mapCard;
-    public PlayMapCard(int gridBoard, int x, int y, ActionCard mapCard)
+    int currentID;
+    public PlayMapCard(int x, int y, ActionCard mapCard)
     {
         this.position = new Vector2D(x, y);
         this.mapCard = mapCard;
+        this.currentID = -1;
     }
     @Override
     public boolean execute(AbstractGameState gs) {
@@ -27,6 +26,10 @@ public class PlayMapCard extends AbstractAction {
         Deck<SaboteurCard> currentPlayerDeck = sgs.playerDecks.get(currentPlayer);
         currentPlayerDeck.getComponents().remove(mapCard);
         sgs.gridBoard.setElementVisibility(position.getX(), position.getY(), currentPlayer, true);
+        Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
+        currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
+
+        this.currentID = currentPlayer;
         return true;
     }
 
@@ -47,6 +50,6 @@ public class PlayMapCard extends AbstractAction {
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return null;
+        return "Reveals card at (" + position.getX() + ", " + position.getY() + ")" + " by " + currentID;
     }
 }

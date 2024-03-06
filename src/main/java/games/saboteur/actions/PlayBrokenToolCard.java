@@ -2,37 +2,35 @@ package games.saboteur.actions;
 
 import core.AbstractGameState;
 import core.actions.AbstractAction;
-import core.actions.SetGridValueAction;
 import core.components.Deck;
 import games.saboteur.SaboteurGameState;
-import games.saboteur.components.PathCard;
+import games.saboteur.components.ActionCard;
 import games.saboteur.components.SaboteurCard;
-import utilities.Vector2D;
 
-public class PlacePathCard extends SetGridValueAction
-{
-    boolean rotated;
-    PathCard pathCard;
-    int x;
-    int y;
-    public PlacePathCard(int gridBoard, int x, int y, PathCard pathCard, boolean rotated) {
-        super(gridBoard, x, y, pathCard);
-        this.rotated = rotated;
-        this.pathCard = pathCard;
+public class PlayBrokenToolCard extends AbstractAction {
+
+    private final int playerID;
+    private int fromID;
+    private final ActionCard brokenToolCard;
+
+    public PlayBrokenToolCard(ActionCard brokenToolCard, int playerID)
+    {
+        this.brokenToolCard = brokenToolCard;
+        this.playerID = playerID;
+        this.fromID = -1;
     }
 
     @Override
     public boolean execute(AbstractGameState gs) {
         SaboteurGameState sgs = (SaboteurGameState) gs;
-        if(rotated)
-        {
-            pathCard.Rotate();
-        }
-        sgs.gridBoard.setElement(x, y, pathCard);
-        sgs.pathCardOptions.remove(new Vector2D(x, y));
+        Deck<SaboteurCard> currentPlayerDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
+        currentPlayerDeck.remove(brokenToolCard);
+        sgs.brokenToolDecks.get(playerID).add(brokenToolCard);
 
         Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
         currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
+
+        this.fromID = sgs.getCurrentPlayer();
         return true;
     }
 
@@ -53,6 +51,6 @@ public class PlacePathCard extends SetGridValueAction
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return "Placed Path Card at (" + x + ", " + y + ")" + (rotated ? " rotated" : "");
+        return "Broken Tool" + brokenToolCard.toolTypes[0] + fromID + " to " + playerID;
     }
 }

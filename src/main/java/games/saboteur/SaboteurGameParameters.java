@@ -138,8 +138,8 @@ public class SaboteurGameParameters extends TunableParameters
         actionCardDeck.put(new ActionCard(fixTools, new ActionCard.ToolCardType[]{lantern, pickaxe}), 1);
         actionCardDeck.put(new ActionCard(fixTools, new ActionCard.ToolCardType[]{pickaxe, mineCart}), 1);
 
-        actionCardDeck.put(new ActionCard(map), 1);
-        actionCardDeck.put(new ActionCard(rockFall), 1);
+        actionCardDeck.put(new ActionCard(map), 3);
+        actionCardDeck.put(new ActionCard(rockFall), 6);
     }
 
     @Override

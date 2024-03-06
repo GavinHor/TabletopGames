@@ -5,37 +5,23 @@ import core.actions.AbstractAction;
 import core.actions.SetGridValueAction;
 import core.components.Deck;
 import games.saboteur.SaboteurGameState;
-import games.saboteur.components.PathCard;
 import games.saboteur.components.SaboteurCard;
-import utilities.Vector2D;
 
-public class PlacePathCard extends SetGridValueAction
+
+public class PlayRockFallCard extends SetGridValueAction
 {
-    boolean rotated;
-    PathCard pathCard;
-    int x;
-    int y;
-    public PlacePathCard(int gridBoard, int x, int y, PathCard pathCard, boolean rotated) {
-        super(gridBoard, x, y, pathCard);
-        this.rotated = rotated;
-        this.pathCard = pathCard;
+    public PlayRockFallCard(int gridBoard, int x, int y) {
+        super(gridBoard, x, y, null);
     }
 
-    @Override
-    public boolean execute(AbstractGameState gs) {
-        SaboteurGameState sgs = (SaboteurGameState) gs;
-        if(rotated)
-        {
-            pathCard.Rotate();
-        }
-        sgs.gridBoard.setElement(x, y, pathCard);
-        sgs.pathCardOptions.remove(new Vector2D(x, y));
 
+    public boolean execute(AbstractGameState gs) {
+        super.execute(gs);
+        SaboteurGameState sgs = (SaboteurGameState) gs;
         Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
         currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
-        return true;
+        return false;
     }
-
     @Override
     public AbstractAction copy() {
         return null;
@@ -53,6 +39,7 @@ public class PlacePathCard extends SetGridValueAction
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return "Placed Path Card at (" + x + ", " + y + ")" + (rotated ? " rotated" : "");
+        return "RockFall at (" + super.getX() + ", " + super.getY() + ")";
     }
 }
+

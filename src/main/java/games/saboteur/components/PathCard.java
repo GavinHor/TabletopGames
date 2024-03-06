@@ -8,7 +8,7 @@ public class PathCard extends SaboteurCard
     final boolean[] directions;
     final public PathCardType type;
     static int nOfTreasures = 1;
-    final boolean hasTreasure;
+    public final boolean hasTreasure;
 
     public enum PathCardType
     {

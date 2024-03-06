@@ -15,14 +15,19 @@ public class SaboteurGameState extends AbstractGameState
 {
     public List<Deck<SaboteurCard>> playerDecks;
     public List<Deck<SaboteurCard>> brokenToolDecks;
-    Deck<SaboteurCard> drawDeck;
+    public Deck<SaboteurCard> drawDeck;
     PartialObservableDeck<SaboteurCard> discardDeck;
     Deck<SaboteurCard> goalDeck;
     PartialObservableDeck<SaboteurCard> roleDeck; // add list for roles as well due to visibility when copying
     public PartialObservableGridBoard<PathCard> gridBoard;
+    public List<PartialObservableDeck<SaboteurCard>> playerNuggetDecks;
+    public Deck<SaboteurCard> nuggetDeck;
     public List<Vector2D> pathCardOptions;
     int centerOfGrid;
     int[] playerScore;
+
+    public int nOfMiners;
+    public int nOfSaboteurs;
 
 
     public SaboteurGameState(AbstractParameters parameters, int nPlayers)
