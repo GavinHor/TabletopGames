@@ -15,4 +15,10 @@ public class RoleCard extends SaboteurCard
         super(SaboteurCardType.Role);
         this.type = type;
     }
+
+    @Override
+    public String toString()
+    {
+        return type.toString();
+    }
 }

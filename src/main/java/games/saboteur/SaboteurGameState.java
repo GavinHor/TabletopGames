@@ -33,6 +33,11 @@ public class SaboteurGameState extends AbstractGameState
     public SaboteurGameState(AbstractParameters parameters, int nPlayers)
     {
         super(parameters, nPlayers);
+        playerScore = new int[nPlayers];
+        playerDecks = new ArrayList<>();
+        brokenToolDecks = new ArrayList<>();
+        pathCardOptions = new ArrayList<>();
+        playerNuggetDecks = new ArrayList<>();
         //to finish
     }
 
@@ -76,6 +81,13 @@ public class SaboteurGameState extends AbstractGameState
         copy.discardDeck = discardDeck.copy();
         copy.goalDeck = goalDeck.copy();
         copy.roleDeck = roleDeck.copy();
+
+        copy.playerNuggetDecks = new ArrayList<>();
+        for (PartialObservableDeck<SaboteurCard> playerNuggetDeck : playerNuggetDecks)
+        {
+            copy.playerNuggetDecks.add(playerNuggetDeck.copy());
+        }
+
         return copy;
     }
 

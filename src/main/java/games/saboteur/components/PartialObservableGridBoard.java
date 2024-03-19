@@ -92,4 +92,15 @@ public class PartialObservableGridBoard<T extends Component> extends GridBoard
     }
 //endregion
 //--------------------------------------------------------------------------------------------------//
+
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < gridBoardVisibility.length; i++)
+        {
+            sb.append("Player ").append(i).append(" visibility: ").append(gridBoardVisibility[i]).append("\n");
+        }
+        return sb.toString();
+    }
 }

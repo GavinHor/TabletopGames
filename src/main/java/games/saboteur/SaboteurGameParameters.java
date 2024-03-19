@@ -15,7 +15,7 @@ import java.util.Objects;
 
 public class SaboteurGameParameters extends TunableParameters
 {
-    public int nPlayers          = 5;
+    public int nPlayers          = 4;
     public int nNuggets          = 27;
     public int nGoalCards        = 3;
     public int nRounds           = 3;
@@ -33,15 +33,9 @@ public class SaboteurGameParameters extends TunableParameters
     public SaboteurGameParameters (long seed)
     {
         super(seed);
-        addTunableParameter("nMiners ", 5,Arrays.asList(3,4,5,6,7));
-        addTunableParameter("nSaboteurs", 2,Arrays.asList(1,2,3,4));
-        addTunableParameter("nNuggets", 27,Arrays.asList(18,27,36,45));
-        addTunableParameter("nPathCards", 44,Arrays.asList(44,88,132,176));
+        addTunableParameter("nPlayers", 5,Arrays.asList(3,4,5,6,7));
+        addTunableParameter("nNuggets", 44,Arrays.asList(44,88,132,176));
         addTunableParameter("nGoalCards", 3,Arrays.asList(3,6,9,12));
-        addTunableParameter("nBrokenToolCards", 9,Arrays.asList(9,18,27,36));
-        addTunableParameter("nRepairToolCards", 9,Arrays.asList(9,18,27,36));
-        addTunableParameter("nRockFallCards", 1,Arrays.asList(1,2,3,4));
-        addTunableParameter("nMapCards", 1,Arrays.asList(1,2,3,4));
         addTunableParameter("nRounds", 3,Arrays.asList(3,6,9,12));
         addTunableParameter("GridSize", 37,Arrays.asList(37,53,69,85));
         addTunableParameter("GoalSpacingX", 7,Arrays.asList(7,14,21,28));
@@ -50,10 +44,6 @@ public class SaboteurGameParameters extends TunableParameters
         //All Path type cards in a deck excluding goal and start card
         PathCard.PathCardType edge = PathCard.PathCardType.Edge;
         PathCard.PathCardType path = PathCard.PathCardType.Path;
-        Vector2D up = new Vector2D(0,1);
-        Vector2D down = new Vector2D(0,-1);
-        Vector2D left = new Vector2D(1,0);
-        Vector2D right = new Vector2D(-1,0);
 
         pathCardDeck.put(new PathCard(edge, new boolean[]{false, true , false, false}), 1);
         pathCardDeck.put(new PathCard(edge, new boolean[]{false, false, true , false}), 1);
@@ -90,32 +80,44 @@ public class SaboteurGameParameters extends TunableParameters
         int nSaboteurs;
         switch(nPlayers)
         {
-            case 4:
+            case 3:
                 nMiners = 3;
+                nSaboteurs = 1;
+                break;
+            case 4:
+                nMiners = 4;
+                nSaboteurs = 1;
                 break;
             case 5:
-            case 6:
                 nMiners = 4;
+                nSaboteurs = 2;
+                break;
+            case 6:
+                nMiners = 5;
+                nSaboteurs = 2;
                 break;
             case 7:
-            case 8:
                 nMiners = 5;
+                nSaboteurs = 3;
+                break;
+            case 8:
+                nMiners = 6;
+                nSaboteurs = 3;
                 break;
             case 9:
-                nMiners = 6;
+                nMiners = 7;
+                nSaboteurs = 3;
                 break;
             case 10:
-            case 11:
                 nMiners = 7;
+                nSaboteurs = 4;
                 break;
             default:
-                nMiners = 2;
+                nMiners = -1;
+                nSaboteurs = -1;
         }
-
-        nSaboteurs = nPlayers - nMiners;
-
         roleCardDeck.put(new RoleCard(RoleCard.RoleCardType.GoldMiner), nMiners);
-        roleCardDeck.put(new RoleCard(RoleCard.RoleCardType.GoldMiner), nSaboteurs);
+        roleCardDeck.put(new RoleCard(RoleCard.RoleCardType.Saboteur), nSaboteurs);
 
         //All Actions Cards
         ActionCard.ToolCardType mineCart = ActionCard.ToolCardType.MineCart;

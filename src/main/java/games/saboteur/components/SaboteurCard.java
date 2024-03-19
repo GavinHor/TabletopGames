@@ -4,8 +4,8 @@ import core.components.Card;
 
 public class SaboteurCard extends Card
 {
-    public SaboteurCardType type;
-    public int nOfNuggets;
+    public final SaboteurCardType type;
+    public final int nOfNuggets;
     public enum SaboteurCardType
     {
         Path,

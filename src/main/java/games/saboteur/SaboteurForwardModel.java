@@ -3,6 +3,7 @@ package games.saboteur;
 import core.AbstractGameState;
 import core.StandardForwardModel;
 import core.actions.AbstractAction;
+import core.components.Card;
 import core.components.Deck;
 import core.components.PartialObservableDeck;
 import games.saboteur.actions.*;
@@ -10,6 +11,7 @@ import games.saboteur.components.*;
 import utilities.Vector2D;
 
 import static core.CoreConstants.VisibilityMode.*;
+
 import java.util.*;
 
 public class SaboteurForwardModel extends StandardForwardModel {
@@ -21,30 +23,22 @@ public class SaboteurForwardModel extends StandardForwardModel {
         SaboteurGameState sgs = (SaboteurGameState) firstState;
         SaboteurGameParameters sgp = (SaboteurGameParameters) sgs.getGameParameters();
 
-        sgs.playerScore = new int[firstState.getCurrentPlayer()];
-        sgs.playerDecks = new ArrayList<>();
-        sgs.brokenToolDecks = new ArrayList<>();
-        sgs.pathCardOptions = new ArrayList<>();
-
-        sgs.playerNuggetDecks = new ArrayList<>();
-        for(int i = 0; i < sgs.getNPlayers(); i++)
-        {
-            sgs.playerNuggetDecks.add(new PartialObservableDeck<>("Player" + i + "NuggetDeck", i, VISIBLE_TO_OWNER));
-        }
-
-        sgs.roleDeck = new PartialObservableDeck<>("RoleDeck", -1, HIDDEN_TO_ALL); //is setting this to 0 alright?
+        sgs.roleDeck = new PartialObservableDeck<>("RoleDeck", sgs.getNPlayers());
         for(int i = 0; i < sgs.roleDeck.getSize(); i++)
         {
             sgs.roleDeck.setVisibilityOfComponent(i, i, true);
         }
 
         sgs.drawDeck = new Deck<>("DrawDeck", HIDDEN_TO_ALL);
-        sgs.discardDeck = new PartialObservableDeck<>("DiscardDeck", -1, VISIBLE_TO_ALL);
         sgs.goalDeck = new Deck<>("GoalDeck", HIDDEN_TO_ALL);
-        setupPlayerDecks(sgs);
+        sgs.discardDeck = new PartialObservableDeck<>("DiscardDeck", sgs.getNPlayers());
+        sgs.gridBoard = new PartialObservableGridBoard<>(sgp.GridSize, sgp.GridSize, sgs.getNPlayers(), true);
+        sgs.nuggetDeck = new Deck<>("NuggetDeck", HIDDEN_TO_ALL);
 
+        setupPlayerDecks(sgs);
         ResetDecks(sgs, sgp);
         ResetBoard(sgs, sgp);
+        SetupStartingHand(sgs);
     }
 
     private void SetupRound(SaboteurGameState sgs, SaboteurGameParameters sgp)
@@ -52,6 +46,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
         ResetDecks(sgs, sgp);
         ResetBoard(sgs, sgp);
         ResetPathCardOptions(sgs);
+        SetupStartingHand(sgs);
     }
 
     private void setupPlayerDecks(SaboteurGameState sgs)
@@ -59,8 +54,20 @@ public class SaboteurForwardModel extends StandardForwardModel {
         //Initialise Player Decks
         for (int i = 0; i < sgs.getNPlayers(); i++)
         {
-            sgs.playerDecks.add(new Deck<>("Player" + i + "Deck", VISIBLE_TO_OWNER));
-            sgs.brokenToolDecks.add(new Deck<>("Player" + i + "BrokenToolDeck", VISIBLE_TO_OWNER));
+            sgs.playerDecks.add(new Deck<SaboteurCard>("Player" + i + "Deck", VISIBLE_TO_OWNER));
+            sgs.brokenToolDecks.add(new Deck<SaboteurCard>("Player" + i + "BrokenToolDeck", VISIBLE_TO_OWNER));
+            sgs.playerNuggetDecks.add(new PartialObservableDeck<SaboteurCard>("Player" + i + "NuggetDeck", i));
+        }
+    }
+
+    private void SetupStartingHand(SaboteurGameState sgs)
+    {
+        for (int i = 0; i < sgs.getNPlayers(); i++)
+        {
+            for (int j = 0; j < 5; j++)
+            {
+                sgs.playerDecks.get(i).add(sgs.drawDeck.draw());
+            }
         }
     }
 //endregion
@@ -103,17 +110,6 @@ public class SaboteurForwardModel extends StandardForwardModel {
             sgs.playerDecks.get(i).clear();
         }
 
-        //Initialise Decks
-        sgs.drawDeck = new Deck<>("DrawDeck", HIDDEN_TO_ALL);
-        sgs.discardDeck = new PartialObservableDeck<>("DiscardDeck", 0, HIDDEN_TO_ALL); //OWNER ID ARBITRARY RN, DUNNO WHAT TO DO
-        sgs.goalDeck = new Deck<>("GoalDeck", HIDDEN_TO_ALL);
-        sgs.roleDeck = new PartialObservableDeck<>("RoleDeck", 0, HIDDEN_TO_ALL);
-        for (int i = 0; i < sgs.getNPlayers(); i++)
-        {
-            sgs.playerDecks.add(new Deck<>("Player" + i + "Deck", VISIBLE_TO_OWNER));
-            sgs.brokenToolDecks.add(new Deck<>("Player" + i + "BrokenToolDeck", VISIBLE_TO_OWNER));
-        }
-
         //Fill in decks
         FillDeckViaMap(sgs.drawDeck, sgp.pathCardDeck);
         FillDeckViaMap(sgs.drawDeck, sgp.actionCardDeck);
@@ -126,7 +122,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
         sgs.roleDeck.shuffle(r);
         sgs.nOfSaboteurs = 0;
         sgs.nOfMiners = 0;
-        for(int i = 0; i < sgs.roleDeck.getSize(); i++)
+        for(int i = 0; i < sgs.getNPlayers(); i++)
         {
             sgs.roleDeck.setVisibilityOfComponent(i, i, true);
             RoleCard currentRole = (RoleCard) sgs.roleDeck.get(i);                                                       //does this remove the card?
@@ -161,11 +157,11 @@ public class SaboteurForwardModel extends StandardForwardModel {
 
         int player = sgs.getCurrentPlayer();
         Deck<SaboteurCard> currentPlayersDeck = sgs.playerDecks.get(player);
-
         boolean playerHasBrokenTool = sgs.brokenToolDecks.get(player).getSize() > 0;
 
         //Check Each card in players deck
         //Switch Case for each type of card you would find in hand
+
         for(SaboteurCard card: currentPlayersDeck.getComponents())
         {
             switch(card.type)
@@ -183,9 +179,9 @@ public class SaboteurForwardModel extends StandardForwardModel {
             }
         }
 
-        for(SaboteurCard card: currentPlayersDeck.getComponents())
+        for(Card card: currentPlayersDeck.getComponents())
         {
-            actions.add(new Pass(card));
+            actions.add(new Pass((SaboteurCard) card));
         }
         return actions;
     }
@@ -412,10 +408,6 @@ public class SaboteurForwardModel extends StandardForwardModel {
                 deck.add(entry.getKey());
             }
         }
-        for(SaboteurCard card : deck.getComponents())
-        {
-            System.out.println(card.toString());
-        }
     }
 
 //endregion
@@ -441,6 +433,10 @@ public class SaboteurForwardModel extends StandardForwardModel {
                     DistributeMinerEarnings(sgs);
                 }
             }
+        }
+        else if(action instanceof PlayRockFallCard)
+        {
+            RecalculatePathCardOptions(sgs);
         }
         endPlayerTurn(sgs);
     }
