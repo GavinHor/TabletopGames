@@ -11,10 +11,9 @@ import utilities.Vector2D;
 
 public class PlacePathCard extends SetGridValueAction
 {
-    boolean rotated;
-    PathCard pathCard;
-    int x;
-    int y;
+    private final boolean rotated;
+    private final PathCard pathCard;
+
     public PlacePathCard(int gridBoard, int x, int y, PathCard pathCard, boolean rotated) {
         super(gridBoard, x, y, pathCard);
         this.rotated = rotated;
@@ -26,13 +25,18 @@ public class PlacePathCard extends SetGridValueAction
         SaboteurGameState sgs = (SaboteurGameState) gs;
         if(rotated)
         {
+            String value = "Rotating Card from " + pathCard.getString() + " to ";
             pathCard.Rotate();
+            value += pathCard.getString();
+            System.out.println(value);
         }
-        sgs.gridBoard.setElement(x, y, pathCard);
-        sgs.pathCardOptions.remove(new Vector2D(x, y));
+        sgs.gridBoard.setElement(getX(), getY(), pathCard);
+        sgs.pathCardOptions.remove(new Vector2D(getX(), getY()));
 
         Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
-        currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
+        currentDeck.remove(pathCard);
+        System.out.println(this);
+        System.out.println(sgs.gridBoard.toString());
         return true;
     }
 
@@ -53,6 +57,10 @@ public class PlacePathCard extends SetGridValueAction
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return "Placed Path Card at (" + x + ", " + y + ")" + (rotated ? " rotated" : "");
+        return toString();
+    }
+
+    public String toString() {
+        return pathCard.getString() + " at (" + getX() + ", " + getY() + ") " +  (rotated ? " rotated" : "");
     }
 }

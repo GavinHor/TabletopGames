@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 public class ActionCard extends SaboteurCard
 {
-    public final ActionTypeCard actionType;
+    public final ActionCardType actionType;
     public final ToolCardType[] toolTypes;
 
     public enum ToolCardType
@@ -14,7 +14,7 @@ public class ActionCard extends SaboteurCard
         Pickaxe
     }
 
-    public enum ActionTypeCard
+    public enum ActionCardType
     {
         RockFall,
         BrokenTools,
@@ -22,21 +22,28 @@ public class ActionCard extends SaboteurCard
         Map
     }
 
-    public ActionCard(ActionTypeCard actionType)
+    public ActionCard(ActionCardType actionType)
     {
         super(SaboteurCardType.Action);
         this.actionType = actionType;
         toolTypes = null;
     }
 
-    public ActionCard(ActionTypeCard actionType, ToolCardType[] toolTypes)
+    public ActionCard(ActionCardType actionType, ToolCardType[] toolTypes)
     {
         super(SaboteurCardType.Action);
         this.actionType = actionType;
         this.toolTypes = toolTypes;
     }
 
-    public ActionCard(ActionTypeCard actionType, ToolCardType toolTypes)
+    public ActionCard(ActionCardType actionType, ToolCardType[] toolTypes, int componentID)
+    {
+        super(SaboteurCardType.Action, componentID);
+        this.actionType = actionType;
+        this.toolTypes = toolTypes;
+    }
+
+    public ActionCard(ActionCardType actionType, ToolCardType toolTypes)
     {
         super(SaboteurCardType.Action);
         this.actionType = actionType;
@@ -57,5 +64,11 @@ public class ActionCard extends SaboteurCard
                 return actionType + Arrays.toString(toolTypes);
         }
         return null;
+    }
+
+    @Override
+    public ActionCard copy()
+    {
+        return new ActionCard(actionType, toolTypes, componentID);
     }
 }

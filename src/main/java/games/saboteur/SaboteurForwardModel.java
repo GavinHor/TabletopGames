@@ -3,6 +3,7 @@ package games.saboteur;
 import core.AbstractGameState;
 import core.StandardForwardModel;
 import core.actions.AbstractAction;
+import core.actions.DoNothing;
 import core.components.Card;
 import core.components.Deck;
 import core.components.PartialObservableDeck;
@@ -29,16 +30,22 @@ public class SaboteurForwardModel extends StandardForwardModel {
             sgs.roleDeck.setVisibilityOfComponent(i, i, true);
         }
 
-        sgs.drawDeck = new Deck<>("DrawDeck", HIDDEN_TO_ALL);
         sgs.goalDeck = new Deck<>("GoalDeck", HIDDEN_TO_ALL);
+        for(int i = 0; i < 3; i++)
+        {
+            sgs.goalDeck.add(new PathCard(PathCard.PathCardType.Goal, new boolean[]{true, true, true, true}));
+        }
+
+        sgs.drawDeck = new Deck<>("DrawDeck", HIDDEN_TO_ALL);
         sgs.discardDeck = new PartialObservableDeck<>("DiscardDeck", sgs.getNPlayers());
         sgs.gridBoard = new PartialObservableGridBoard<>(sgp.GridSize, sgp.GridSize, sgs.getNPlayers(), true);
         sgs.nuggetDeck = new Deck<>("NuggetDeck", HIDDEN_TO_ALL);
 
-        setupPlayerDecks(sgs);
-        ResetDecks(sgs, sgp);
-        ResetBoard(sgs, sgp);
-        SetupStartingHand(sgs);
+
+        FillDeckViaMap(sgs.nuggetDeck, sgp.goldNuggetDeck);
+        sgs.nuggetDeck.shuffle(new Random(sgs.getGameParameters().getRandomSeed()));
+        SetupPlayerDecks(sgs);
+        SetupRound(sgs, sgp);
     }
 
     private void SetupRound(SaboteurGameState sgs, SaboteurGameParameters sgp)
@@ -49,14 +56,14 @@ public class SaboteurForwardModel extends StandardForwardModel {
         SetupStartingHand(sgs);
     }
 
-    private void setupPlayerDecks(SaboteurGameState sgs)
+    private void SetupPlayerDecks(SaboteurGameState sgs)
     {
         //Initialise Player Decks
         for (int i = 0; i < sgs.getNPlayers(); i++)
         {
-            sgs.playerDecks.add(new Deck<SaboteurCard>("Player" + i + "Deck", VISIBLE_TO_OWNER));
-            sgs.brokenToolDecks.add(new Deck<SaboteurCard>("Player" + i + "BrokenToolDeck", VISIBLE_TO_OWNER));
-            sgs.playerNuggetDecks.add(new PartialObservableDeck<SaboteurCard>("Player" + i + "NuggetDeck", i));
+            sgs.playerDecks.add(new Deck<>("Player" + i + "Deck", VISIBLE_TO_OWNER));
+            sgs.brokenToolDecks.add(new Deck<>("Player" + i + "BrokenToolDeck", VISIBLE_TO_OWNER));
+            sgs.playerNuggetDecks.add(new PartialObservableDeck<>("Player" + i + "NuggetDeck", i));
         }
     }
 
@@ -77,6 +84,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
     {
         //Initialise GridBoard with starting card
         sgs.centerOfGrid = (int) Math.floor(sgp.GridSize / 2.0);
+        sgs.gridBoard = new PartialObservableGridBoard<>(sgp.GridSize, sgp.GridSize, sgs.getNPlayers(), true);
         sgs.gridBoard.setElement(sgs.centerOfGrid, sgs.centerOfGrid, new PathCard(PathCard.PathCardType.Start, new boolean[]{true, true, true, true}));
         ResetGoals(sgs,sgp);
         }
@@ -91,10 +99,11 @@ public class SaboteurForwardModel extends StandardForwardModel {
         for(SaboteurCard goalCard: sgs.goalDeck.getComponents())
         {
             assert startingY > sgs.gridBoard.getHeight(): "Placing Goal card out of bounds for Y";
-
-            sgs.gridBoard.setElement(sgp.GoalSpacingX + 1, startingY,goalCard);
+            PathCard currentCard = (PathCard) goalCard;
+            sgs.gridBoard.setElement(sgp.GoalSpacingX + 1 + sgs.centerOfGrid, startingY + sgs.centerOfGrid, currentCard);
             startingY -= (sgp.GoalSpacingY + 1);
         }
+        //System.out.println(sgs.gridBoard.toString());
     }
 
     private void ResetDecks(SaboteurGameState sgs, SaboteurGameParameters sgp)
@@ -102,13 +111,13 @@ public class SaboteurForwardModel extends StandardForwardModel {
         //Clear player decks besides their gold nugget deck
         sgs.drawDeck.clear();
         sgs.discardDeck.clear();
-        sgs.goalDeck.clear();
         sgs.roleDeck.clear();
         for (int i = 0; i < sgs.getNPlayers(); i++)
         {
             sgs.brokenToolDecks.get(i).clear();
             sgs.playerDecks.get(i).clear();
         }
+
 
         //Fill in decks
         FillDeckViaMap(sgs.drawDeck, sgp.pathCardDeck);
@@ -139,7 +148,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
 
     private void ResetPathCardOptions(SaboteurGameState sgs)
     {
-        sgs.pathCardOptions = new ArrayList<>();
+        sgs.pathCardOptions.clear();
         sgs.pathCardOptions.add(new Vector2D(sgs.centerOfGrid + 1, sgs.centerOfGrid));
         sgs.pathCardOptions.add(new Vector2D(sgs.centerOfGrid - 1, sgs.centerOfGrid));
         sgs.pathCardOptions.add(new Vector2D(sgs.centerOfGrid, sgs.centerOfGrid + 1));
@@ -155,7 +164,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
         ArrayList<AbstractAction> actions = new ArrayList<>();
         SaboteurGameState sgs = (SaboteurGameState) gameState;
 
-        int player = sgs.getCurrentPlayer();
+        int player = gameState.getCurrentPlayer();
         Deck<SaboteurCard> currentPlayersDeck = sgs.playerDecks.get(player);
         boolean playerHasBrokenTool = sgs.brokenToolDecks.get(player).getSize() > 0;
 
@@ -172,6 +181,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
                         actions.addAll(ComputePathAction((PathCard) card, sgs));
                         break;
                     }
+                    break;
 
                 case Action:
                     actions.addAll(ComputeActionAction((ActionCard) card ,sgs));
@@ -182,6 +192,16 @@ public class SaboteurForwardModel extends StandardForwardModel {
         for(Card card: currentPlayersDeck.getComponents())
         {
             actions.add(new Pass((SaboteurCard) card));
+        }
+        System.out.println("Current Round " + sgs.getRoundCounter());
+        System.out.println("Current Turn " + sgs.getTurnCounter());
+        System.out.println("Current Player " + player);
+        System.out.println(sgs.brokenToolDecks.get(player) != null ? sgs.brokenToolDecks.get(player).toString() : "No Broken Tools");
+        System.out.println("Available Actions: " + actions.size());
+        System.out.println(PrintArray(actions.toArray()));
+        if(actions.size() == 0)
+        {
+            actions.add(new DoNothing());
         }
         return actions;
     }
@@ -199,6 +219,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
         {
             if(CheckPathCardPlacement(card, sgs, location))
             {
+                //System.out.println(card.toString() + " can be placed at " + location.toString());
                 actions.add(new PlacePathCard(0, location.getX(), location.getY(), card, false));
             }
 
@@ -206,79 +227,137 @@ public class SaboteurForwardModel extends StandardForwardModel {
             card.Rotate();
             if(CheckPathCardPlacement(card, sgs, location))
             {
+                //System.out.println(card.toString() + " can be placed at " + location.toString() + " rotated");
                 actions.add(new PlacePathCard(0, location.getX(), location.getY(), card, true));
             }
             card.Rotate();
         }
-
         return actions;
     }
 
+    //Check if the path card can be placed at the location
     private boolean CheckPathCardPlacement(PathCard card, SaboteurGameState sgs, Vector2D location)
     {
-        boolean canBePlaced = true;
+        boolean[] currentDirections = card.getDirections();
         for(int i = 0 ; i < 4; i++)
         {
             Vector2D offset = getCardOffset(i);
-            PathCard offsetCard =  (PathCard) sgs.gridBoard.getElement(location.getX() + offset.getX(), location.getY() + offset.getY());
-
-            if(offsetCard != null && offsetCard.getDirections()[i] == card.getDirections()[card.getOppositeDirection(i)])
+            int neighborX = location.getX() + offset.getX();
+            int neighborY = location.getY() + offset.getY();
+            PathCard neighborCard = sgs.gridBoard.getElement(neighborX, neighborY);
+            if(neighborCard == null)
             {
-                canBePlaced = false;
+                continue;
+            }
+            boolean[] neighbourDirections = neighborCard.getDirections();
+            if(currentDirections[i] != neighbourDirections[neighborCard.getOppositeDirection(i)])
+            {
+                return false;
             }
         }
-        return canBePlaced;
+        return true;
     }
+
     //For when Rockfall card is played
+    //Recalculate all possible path card options via recursion
     private void RecalculatePathCardOptions(SaboteurGameState sgs)
     {
         sgs.pathCardOptions.clear();
-        RecalculatePathCardOptionsRecursive(new boolean[]{false, false, false, false}, sgs, new Vector2D(sgs.centerOfGrid, sgs.centerOfGrid));
+        PathCard currentCard = sgs.gridBoard.getElement(sgs.centerOfGrid, sgs.centerOfGrid);
+        Map<Vector2D, PathCard> previousCards = new HashMap<>();
+        previousCards.put(new Vector2D(sgs.centerOfGrid, sgs.centerOfGrid), currentCard);
+        RecalculatePathCardOptionsRecursive(previousCards,sgs, new Vector2D(sgs.centerOfGrid, sgs.centerOfGrid));
     }
 
-    private void RecalculatePathCardOptionsRecursive(boolean[] directionFrom, SaboteurGameState sgs, Vector2D location)
+    private void RecalculatePathCardOptionsRecursive(Map<Vector2D, PathCard> previousCards, SaboteurGameState sgs, Vector2D location)
     {
-        PathCard currentCard = (PathCard) sgs.gridBoard.getElement(location.getX(), location.getY());
+        PathCard currentCard = sgs.gridBoard.getElement(location.getX(), location.getY());
         if(currentCard == null)
         {
+            //System.out.println("adding " + location.getX() + " " + location.getY() + " to pathCardOptions");
+            //System.out.println(sgs.gridBoard.toString(location.getX(), location.getY()));
             sgs.pathCardOptions.add(location);
             return;
         }
-        boolean[] currentDirections = currentCard.getDirections();
+        else if (currentCard.type == PathCard.PathCardType.Edge)
+        {
+            return;
+        }
+        else if (previousCards.containsKey(location) && previousCards.size() != 1)
+        {
+            return;
+        }
+        //check adjacent cards for path card
         for(int i = 0; i < 4; i++)
         {
-            if(currentDirections[i] && !directionFrom[i])
+            Vector2D offset = getCardOffset(i);
+            int neighborX = location.getX() + offset.getX();
+            int neighborY = location.getY() + offset.getY();
+            PathCard neighbourCard = sgs.gridBoard.getElement(neighborX, neighborY);
+            if (currentCard.getDirections()[i] && neighbourCard != previousCards.get(location))
             {
-                boolean[] newDirectionFrom = new boolean[4];
-                newDirectionFrom[i] = true;
-                RecalculatePathCardOptionsRecursive(newDirectionFrom, sgs, location.add(getCardOffset(i)));
+                //System.out.println(currentCard.getDirections()[i]);
+                previousCards.put(new Vector2D(location.getX(), location.getY()), currentCard);
+                RecalculatePathCardOptionsRecursive(previousCards, sgs, new Vector2D(neighborX, neighborY));
             }
         }
     }
 
+    //down, up, left, right as the grid is 0 starts on the top left
+    //0,1,2,3,4,5,6
+    //1
+    //2
+    //3
+    //4
+    //5
+    //6
+
     private Vector2D getCardOffset(int value)
     {
-        switch (value % 4)
+        switch (value)
         {
             case 0:
-                return new Vector2D(0,1);
-            case 1:
                 return new Vector2D(0,-1);
+            case 1:
+                return new Vector2D(0,1);
             case 2:
-                return new Vector2D(1,0);
-            case 3:
                 return new Vector2D(-1,0);
+            case 3:
+                return new Vector2D(1,0);
             default:
                 return new Vector2D(999,999);
         }
     }
 //endregion
-//region GettingFixToolsActions
-    private ArrayList<AbstractAction> ComputeActionFixTools(ActionCard card, SaboteurGameState sgs)
+//region GettingActionActions
+    private ArrayList<AbstractAction> ComputeActionAction (ActionCard card, SaboteurGameState sgs)
+    {
+        ArrayList<AbstractAction> actions = new ArrayList<>();
+        switch(card.actionType)
+        {
+            case BrokenTools:
+                actions.addAll(ComputeActionBrokenTools(card, sgs));
+                break;
+
+            case FixTools:
+                actions.addAll(ComputeActionFixTools(card, sgs));
+                break;
+
+            case Map:
+                actions.addAll(ComputeActionMap(card, sgs));
+                break;
+
+            case RockFall:
+                actions.addAll(ComputeActionRockFall(card, sgs));
+                break;
+        }
+        return actions;
+    }
+    private ArrayList<AbstractAction> ComputeActionBrokenTools(ActionCard card, SaboteurGameState sgs)
     {
         //for everyone's BrokenToolDeck
-        //If that player does have a BrokenTool Matching it
-            //new action to remove players
+        //If that player doesn't have a BrokenTool Matching it
+        //new action to add card onto their BrokenToolDeck
         ArrayList<AbstractAction> actions = new ArrayList<>();
         for(int currentPlayer = 0; currentPlayer < sgs.getNPlayers(); currentPlayer++)
         {
@@ -287,39 +366,40 @@ public class SaboteurForwardModel extends StandardForwardModel {
                 continue;
             }
             Deck<SaboteurCard> currentPlayerBrokenToolDeck = sgs.brokenToolDecks.get(currentPlayer);
-            for(SaboteurCard brokenToolCard: currentPlayerBrokenToolDeck.getComponents())
+
+            for(ActionCard.ToolCardType type : card.toolTypes)
             {
-                ActionCard currentCard = (ActionCard) brokenToolCard;
-                if(HasToolType(card, currentCard))
+                if(!HasToolType(type, currentPlayerBrokenToolDeck))
                 {
-                    actions.add(new PlayBrokenToolCard(card,currentPlayer));
+                    actions.add(new PlayBrokenToolCard(card, currentPlayer, type));
                 }
             }
         }
         return actions;
     }
-//endregion
-
-    private ArrayList<AbstractAction> ComputeActionAction (ActionCard card, SaboteurGameState sgs)
+    private ArrayList<AbstractAction> ComputeActionFixTools(ActionCard card, SaboteurGameState sgs)
     {
+        //for everyone's BrokenToolDeck
+        //If that player does have a BrokenTool Matching it
+        //new action to remove players
         ArrayList<AbstractAction> actions = new ArrayList<>();
-        switch(card.actionType)
+        for(int currentPlayer = 0; currentPlayer < sgs.getNPlayers(); currentPlayer++)
         {
-            case BrokenTools:
-                actions.addAll(ComputeActionBrokenTools(card, sgs));
-
-            case FixTools:
-                actions.addAll(ComputeActionFixTools(card, sgs));
-
-            case Map:
-                actions.addAll(ComputeActionMap(card, sgs));
-
-            case RockFall:
-                actions.addAll(ComputeActionRockFall(sgs));
+            if(currentPlayer == sgs.getCurrentPlayer())
+            {
+                continue;
+            }
+            Deck<SaboteurCard> currentPlayerBrokenToolDeck = sgs.brokenToolDecks.get(currentPlayer);
+            for(ActionCard.ToolCardType type : card.toolTypes)
+            {
+                if(HasToolType(type, currentPlayerBrokenToolDeck))
+                {
+                    actions.add(new PlayFixToolCard(currentPlayer, card, type));
+                }
+            }
         }
         return actions;
     }
-
     private ArrayList<AbstractAction> ComputeActionMap(ActionCard card, SaboteurGameState sgs)
     {
         //new action to check either 1 of the 3 goals and make it visible to the player
@@ -330,7 +410,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
         {
             for(int y = 0; y < gridBoard.getHeight(); y++)
             {
-                PathCard currentCard = (PathCard) gridBoard.getElement(x, y);
+                PathCard currentCard =  gridBoard.getElement(x, y);
                 if(currentCard != null && currentCard.type == PathCard.PathCardType.Goal)
                 {
                     actions.add(new PlayMapCard(x, y, card));
@@ -339,62 +419,36 @@ public class SaboteurForwardModel extends StandardForwardModel {
         }
         return actions;
     }
-    private ArrayList<AbstractAction> ComputeActionRockFall(SaboteurGameState sgs)
+    private ArrayList<AbstractAction> ComputeActionRockFall(ActionCard card, SaboteurGameState sgs)
     {
         ArrayList<AbstractAction> actions = new ArrayList<>();
         for(int x = 0; x < sgs.gridBoard.getWidth(); x++)
         {
             for(int y = 0; y < sgs.gridBoard.getHeight(); y++)
             {
-                PathCard currentCard = (PathCard) sgs.gridBoard.getElement(x, y);
+                PathCard currentCard = sgs.gridBoard.getElement(x, y);
                 if(currentCard != null && (currentCard.type == PathCard.PathCardType.Path || currentCard.type == PathCard.PathCardType.Edge))
                 {
-                    actions.add(new PlayRockFallCard(sgs.gridBoard.getComponentID(), x, y));
+                    actions.add(new PlayRockFallCard(sgs.gridBoard.getComponentID(), x, y, card));
                 }
             }
         }
         return actions;
     }
-
-    private ArrayList<AbstractAction> ComputeActionBrokenTools(ActionCard card, SaboteurGameState sgs)
+    private boolean HasToolType(ActionCard.ToolCardType toolType, Deck<SaboteurCard> brokenToolsDeck)
     {
-        //for everyone's BrokenToolDeck
-        //If that player doesn't have a BrokenTool Matching it
-            //new action to add card onto their BrokenToolDeck
-        ArrayList<AbstractAction> actions = new ArrayList<>();
-        for(int currentPlayer = 0; currentPlayer < sgs.getNPlayers(); currentPlayer++)
+        //assume that the card has only 1 tool type as brokenTools only have 1 type
+        for(SaboteurCard card: brokenToolsDeck.getComponents())
         {
-            if(currentPlayer == sgs.getCurrentPlayer())
-            {
-                continue;
-            }
-            Deck<SaboteurCard> currentPlayerBrokenToolDeck = sgs.brokenToolDecks.get(currentPlayer);
-            for(SaboteurCard brokenToolCard: currentPlayerBrokenToolDeck.getComponents())
-            {
-                ActionCard currentCard = (ActionCard) brokenToolCard;
-                if(!HasToolType(card, currentCard))
-                {
-                    actions.add(new PlayBrokenToolCard(card, currentPlayer));
-                }
-            }
-        }
-        return actions;
-    }
-    private boolean HasToolType(ActionCard card, ActionCard currentCard)
-    {
-        //assume that the card has only 1 tool type
-        assert currentCard.toolTypes != null;
-        assert card.toolTypes != null;
-
-        for(ActionCard.ToolCardType currentToolType: currentCard.toolTypes)
-        {
-            if(card.toolTypes[0] == currentToolType)
+            ActionCard currentCard = (ActionCard) card;
+            if (currentCard.toolTypes[0] == toolType)
             {
                 return true;
             }
         }
         return false;
     }
+//endregion
 //endregion
 //--------------------------------------------------------------------------------------------------//
 //region OtherFunctions
@@ -410,27 +464,74 @@ public class SaboteurForwardModel extends StandardForwardModel {
         }
     }
 
+    private String PrintArray(Object[] array)
+    {
+        if(array.length == 0)
+        {
+            return "";
+        }
+        String value = "------------------------------------------------\n";
+        for(Object input: array)
+        {
+            value += input.toString() + "\n";
+        }
+        value += "------------------------------------------------\n";
+        return value;
+    }
 //endregion
 //--------------------------------------------------------------------------------------------------//
-//region afterAction functions
+//region AfterAction Functions
     @Override
     protected void _afterAction(AbstractGameState gameState, AbstractAction action)
     {
         SaboteurGameState sgs = (SaboteurGameState) gameState;
+        //draw card for player
+        Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
+        if(sgs.drawDeck.getSize() != 0)
+        {
+            currentDeck.add(sgs.drawDeck.draw());
+        }
         if (action instanceof PlacePathCard)
         {
-            int goalDirection = HasGoalInPossibleDirection(sgs, (PlacePathCard) action);
+            PlacePathCard currentPlacement = (PlacePathCard) action;
+            int goalDirection = HasGoalInPossibleDirection(sgs, currentPlacement);
             if(goalDirection != -1)
             {
                 Vector2D offset = getCardOffset(goalDirection);
-                PathCard goalCard = (PathCard) sgs.gridBoard.getElement(((PlacePathCard) action).getX() + offset.getX(), ((PlacePathCard) action).getY() + offset.getY());
+                PathCard goalCard = sgs.gridBoard.getElement(((PlacePathCard) action).getX() + offset.getX(), ((PlacePathCard) action).getY() + offset.getY());
                 for(int i = 0; i < sgs.getNPlayers(); i++)
                 {
                     sgs.gridBoard.setElementVisibility(((PlacePathCard) action).getX() + offset.getX(), ((PlacePathCard) action).getY() + offset.getY(), i, true);
                 }
                 if(goalCard.hasTreasure)
                 {
+                    System.out.println("Miners won!");
                     DistributeMinerEarnings(sgs);
+                    DisplayNuggetsWorth(sgs);
+                }
+            }
+            Vector2D location = new Vector2D(currentPlacement.getX(), currentPlacement.getY());
+            PathCard currentCard = sgs.gridBoard.getElement(location.getX(), location.getY());
+            boolean[] directions = currentCard.getDirections();
+            //add available options
+            if(currentCard instanceof PathCard && currentCard.type == PathCard.PathCardType.Path)
+            {
+                for(int i = 0; i < 4; i++)
+                {
+                    Vector2D offset = getCardOffset(i);
+                    int neighborX = location.getX() + offset.getX();
+                    int neighborY = location.getY() + offset.getY();
+                    if(sgs.gridBoard.getElement(neighborX, neighborY) == null && directions[i])
+                    {
+                        //System.out.println(sgs.gridBoard.getElement(neighborX, neighborY));
+                        //System.out.println("ADDING " + neighborX + " " + neighborY + " to pathCardOptions");
+                        //System.out.println(sgs.gridBoard.toString(neighborX, neighborY));
+                        sgs.pathCardOptions.add(new Vector2D(neighborX, neighborY));
+                    }
+                    else if(sgs.gridBoard.getElement(neighborX, neighborY) != null && directions[i])
+                    {
+                        RecalculatePathCardOptions(sgs);
+                    }
                 }
             }
         }
@@ -438,20 +539,26 @@ public class SaboteurForwardModel extends StandardForwardModel {
         {
             RecalculatePathCardOptions(sgs);
         }
+        else if(action instanceof DoNothing)
+        {
+            System.out.println("Saboteurs won!");
+            DistributeSaboteurEarnings(sgs);
+            DisplayNuggetsWorth(sgs);
+        }
         endPlayerTurn(sgs);
     }
 
     //check if path card goes into a goal
     private int HasGoalInPossibleDirection(SaboteurGameState sgs, PlacePathCard placePathCard)
     {
-        PathCard pathCard = (PathCard) sgs.gridBoard.getElement(placePathCard.getX(), placePathCard.getY());
+        PathCard pathCard = sgs.gridBoard.getElement(placePathCard.getX(), placePathCard.getY());
         boolean directions[] = pathCard.getDirections();
         for(int i = 0; i < pathCard.getDirections().length; i++)
         {
             if(directions[i])
             {
                 getCardOffset(i);
-                PathCard currentCard = (PathCard) sgs.gridBoard.getElement(placePathCard.getX() + getCardOffset(i).getX(), placePathCard.getY() + getCardOffset(i).getY());
+                PathCard currentCard = sgs.gridBoard.getElement(placePathCard.getX() + getCardOffset(i).getX(), placePathCard.getY() + getCardOffset(i).getY());
                 if(currentCard != null && currentCard.type == PathCard.PathCardType.Goal)
                 {
                     return i;
@@ -477,7 +584,10 @@ public class SaboteurForwardModel extends StandardForwardModel {
                 highestNuggetSizeIndex = i;
             }
         }
-        winningPlayersNuggetDeck.add(sgs.nuggetDeck.pick(highestNuggetSizeIndex));
+        if(sgs.nuggetDeck.getSize() != 0)
+        {
+            winningPlayersNuggetDeck.add(sgs.nuggetDeck.pick(highestNuggetSizeIndex));
+        }
 
         for(int player = 0; player < sgs.getNPlayers(); player++)
         {
@@ -487,11 +597,15 @@ public class SaboteurForwardModel extends StandardForwardModel {
                 continue;
             }
             PartialObservableDeck<SaboteurCard> currentPlayerNuggetDeck = sgs.playerNuggetDecks.get(player);
-            currentPlayerNuggetDeck.add(sgs.nuggetDeck.draw());
+            if(sgs.nuggetDeck.getSize() != 0)
+            {
+                currentPlayerNuggetDeck.add(sgs.nuggetDeck.draw());
+            }
         }
 
-        if(sgs.getRoundCounter() > 2)
+        if(sgs.getRoundCounter() > 1)
         {
+            System.out.println("Game Finished");
             endGame(sgs);
         }
         SetupRound(sgs, (SaboteurGameParameters) sgs.getGameParameters());
@@ -502,6 +616,7 @@ public class SaboteurForwardModel extends StandardForwardModel {
     private void DistributeSaboteurEarnings(SaboteurGameState sgs)
     {
         int targetNuggetValue = 0;
+        int currentValue = 0;
         switch (sgs.nOfSaboteurs)
         {
             case 1:
@@ -516,11 +631,13 @@ public class SaboteurForwardModel extends StandardForwardModel {
                 break;
         }
 
+        System.out.println("There are " + sgs.nOfSaboteurs + " saboteurs");
+        System.out.println("The target value is " + targetNuggetValue);
         for(int player = 0; player < sgs.getNPlayers(); player++)
         {
-            Deck<SaboteurCard> currentPlayerNuggetDeck = sgs.playerNuggetDecks.get(player);
             RoleCard currentPlayersRole = (RoleCard) sgs.roleDeck.get(player);
-            if(player == sgs.getCurrentPlayer() || currentPlayersRole.type == RoleCard.RoleCardType.GoldMiner)
+            //System.out.println("Player " + player + " has role " + currentPlayersRole.type.toString());
+            if(currentPlayersRole.type == RoleCard.RoleCardType.GoldMiner)
             {
                 continue;
             }
@@ -528,74 +645,71 @@ public class SaboteurForwardModel extends StandardForwardModel {
             {
                 break;
             }
+            GiveSaboteurGold(sgs, targetNuggetValue, player);
 
-            int[] indexes = getNuggetValues(sgs, targetNuggetValue);
-            int pointer = 0;
-            for(int i = 0; i < sgs.nuggetDeck.getSize(); i++)
-            {
-                if(sgs.nuggetDeck.peek(i).nOfNuggets == indexes[pointer])
-                {
-                    currentPlayerNuggetDeck.add(sgs.nuggetDeck.pick(i));
-                    pointer++;
-                    if(pointer == indexes.length)
-                    {
-                        break;
-                    }
-                }
-            }
         }
         if(sgs.getRoundCounter() > 2)
         {
+            System.out.println("Game Finished");
             endGame(sgs);
         }
         SetupRound(sgs, (SaboteurGameParameters) sgs.getGameParameters());
         endRound(sgs);
     }
-
-    private int getHighestNuggetSize(SaboteurGameState sgs)
+    private void DisplayNuggetsWorth(SaboteurGameState sgs)
     {
-        int highestNuggetSize = 0;
-        for(int i = 0; i < sgs.nuggetDeck.getSize(); i++)
+        for(int i = 0; i < sgs.getNPlayers(); i++)
         {
-            if(sgs.nuggetDeck.peek(i).nOfNuggets > highestNuggetSize)
+            int value = 0;
+            for(SaboteurCard card: sgs.playerNuggetDecks.get(i).getComponents())
             {
-                highestNuggetSize = sgs.nuggetDeck.peek(i).nOfNuggets;
+                value += card.nOfNuggets;
             }
+            System.out.println("Player " + i + " has nuggets worth: " + value + " gold");
         }
-        return highestNuggetSize;
     }
 
-    private int[] getNuggetValues(SaboteurGameState sgs, int targetValue)
+    private boolean NuggetExists(SaboteurGameState sgs, int targetValue)
     {
-        int l = 0;
-        int r = sgs.nuggetDeck.getSize() - 1;
-        while(l < r)
+        for(int i = 0; i < sgs.nuggetDeck.getSize(); i++)
         {
-            int lValue = sgs.nuggetDeck.peek(l).nOfNuggets;
-            int rValue = sgs.nuggetDeck.peek(r).nOfNuggets;
-            int currentValue = lValue + rValue;
-            if(currentValue == targetValue)
+            if(sgs.nuggetDeck.peek(i).nOfNuggets == targetValue)
             {
-                return new int[]{lValue,rValue};
-            }
-            if(currentValue < targetValue)
-            {
-                l++;
-            }
-            else
-            {
-                r--;
+                return true;
             }
         }
-        if(getHighestNuggetSize(sgs) == 1)
+        return false;
+    }
+
+    private void GiveSaboteurGold(SaboteurGameState sgs, int targetValue, int currentPlayer)
+    {
+        Deck<SaboteurCard> currentNuggetDeck = sgs.playerNuggetDecks.get(currentPlayer);
+        int currentValue = 0;
+        int preferredNuggetValue = 3;
+        if(preferredNuggetValue > targetValue)
         {
-            int[] indexes = new int[sgs.nOfSaboteurs];
-            for(int i = 0; i < sgs.nOfSaboteurs; i++)
+            preferredNuggetValue = targetValue;
+        }
+        while(targetValue != currentValue && preferredNuggetValue > 0)
+        {
+            if(NuggetExists(sgs, preferredNuggetValue))
             {
-                indexes[i] = 0;
+                for (int i = 0; i < sgs.nuggetDeck.getSize(); i++)
+                {
+                    if (sgs.nuggetDeck.peek(i).nOfNuggets == preferredNuggetValue)
+                    {
+                        System.out.println("Player " + currentPlayer + " has received a nugget worth " + preferredNuggetValue + " gold");
+                        currentNuggetDeck.add(sgs.nuggetDeck.pick(i));
+                        currentValue += preferredNuggetValue;
+                        preferredNuggetValue = targetValue - currentValue;
+                        break;
+                    }
+                }
+            } else
+            {
+                preferredNuggetValue -= 1;
             }
         }
-        return new int[]{-1};
     }
 //endregion
 //--------------------------------------------------------------------------------------------------//

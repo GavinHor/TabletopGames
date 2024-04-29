@@ -5,7 +5,7 @@ import org.apache.poi.ss.formula.atp.Switch;
 import java.util.Arrays;
 public class PathCard extends SaboteurCard
 {
-    final boolean[] directions;
+    final private boolean[] directions;
     final public PathCardType type;
     static int nOfTreasures = 1;
     public final boolean hasTreasure;
@@ -32,6 +32,14 @@ public class PathCard extends SaboteurCard
         {
             hasTreasure = false;
         }
+    }
+
+    public PathCard(PathCardType type, boolean[] direction, boolean hasTreasure, int componentID)
+    {
+        super(SaboteurCardType.Path, componentID);
+        this.type = type;
+        this.directions = direction;
+        this.hasTreasure = hasTreasure;
     }
 
     public void Rotate()
@@ -74,10 +82,137 @@ public class PathCard extends SaboteurCard
             case Path:
                 return type + Arrays.toString(directions);
             case Start:
-                return type.toString();
+                return "S";
             case Goal:
-                return type.toString() + hasTreasure;
+                return "G" + hasTreasure;
         }
         return null;
     }
+
+    @Override
+    public PathCard copy()
+    {
+        return new PathCard(type, directions, hasTreasure, componentID);
+    }
+
+    public String getString()
+    {
+        if(type == PathCard.PathCardType.Path)
+        {
+            if(Arrays.equals(directions, new boolean[]{false, false, true, true}))
+            {
+                return "─";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, false, false}))
+            {
+                return "│";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, false, true}))
+            {
+                return "┌";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, true, false}))
+            {
+                return "┐";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, false, true}))
+            {
+                return "└";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, true, false}))
+            {
+                return "┘";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, true, false}))
+            {
+                return "┤";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, false, true}))
+            {
+                return "├";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, true, true}))
+            {
+                return "┬";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, true, true}))
+            {
+                return "┴";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, true, true}))
+            {
+                return "┼";
+            }
+        }
+        else if(type == PathCard.PathCardType.Edge)
+        {
+            if(Arrays.equals(directions, new boolean[]{false, false, true, true}))
+            {
+                return "═";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, false, false}))
+            {
+                return "║";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, false, true}))
+            {
+                return "╔";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, true, false}))
+            {
+                return "╗";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, false, true}))
+            {
+                return "╚";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, true, false}))
+            {
+                return "╝";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, true, false}))
+            {
+                return "╣";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, false, true}))
+            {
+                return "╠";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, true, true}))
+            {
+                return "╦";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, true, true}))
+            {
+                return "╩";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, true, true, true}))
+            {
+                return "╬";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, false, false, true}))
+            {
+                return "<";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, false, true, false}))
+            {
+                return ">";
+            }
+            else if(Arrays.equals(directions, new boolean[]{true, false, false, false}))
+            {
+                return "v";
+            }
+            else if(Arrays.equals(directions, new boolean[]{false, true, false, false}))
+            {
+                return "^";
+            }
+        } else if (type == PathCard.PathCardType.Goal) {
+            return "G";
+        } else if (type == PathCard.PathCardType.Start) {
+            return "S";
+
+        }
+        return " ";
+    }
+
 }

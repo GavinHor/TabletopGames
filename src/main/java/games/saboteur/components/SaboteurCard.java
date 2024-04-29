@@ -21,10 +21,28 @@ public class SaboteurCard extends Card
         this.nOfNuggets = 0;
     }
 
-    public SaboteurCard (int nOfNuggets)
+    public SaboteurCard(int nOfNuggets)
     {
         super(SaboteurCardType.GoldNugget.toString());
         this.type = SaboteurCardType.GoldNugget;
         this.nOfNuggets = nOfNuggets;
+    }
+
+    public SaboteurCard(SaboteurCardType type, int nOfNuggets, int componentID)
+    {
+        super(type.toString(), componentID);
+        this.type = type;
+        this.nOfNuggets = nOfNuggets;
+    }
+
+    public SaboteurCard(SaboteurCardType type, int componentID)
+    {
+        super(type.toString(), componentID);
+        this.type = type;
+        this.nOfNuggets = 0;
+    }
+
+    @Override public SaboteurCard copy() {
+        return new SaboteurCard(type, this.nOfNuggets, componentID);
     }
 }

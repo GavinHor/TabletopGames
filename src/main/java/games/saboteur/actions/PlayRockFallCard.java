@@ -5,21 +5,28 @@ import core.actions.AbstractAction;
 import core.actions.SetGridValueAction;
 import core.components.Deck;
 import games.saboteur.SaboteurGameState;
+import games.saboteur.components.ActionCard;
 import games.saboteur.components.SaboteurCard;
 
 
 public class PlayRockFallCard extends SetGridValueAction
 {
-    public PlayRockFallCard(int gridBoard, int x, int y) {
+    private final ActionCard rockFallCard;
+    public PlayRockFallCard(int gridBoard, int x, int y, ActionCard rockFallCard) {
         super(gridBoard, x, y, null);
+        this.rockFallCard = rockFallCard;
     }
 
 
     public boolean execute(AbstractGameState gs) {
-        super.execute(gs);
         SaboteurGameState sgs = (SaboteurGameState) gs;
+        sgs.gridBoard.setElement(getX(), getY(), null);
+
         Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
-        currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
+        currentDeck.remove(rockFallCard);
+
+        System.out.println(this);
+        System.out.println(sgs.gridBoard.toString());
         return false;
     }
     @Override
@@ -39,6 +46,10 @@ public class PlayRockFallCard extends SetGridValueAction
 
     @Override
     public String getString(AbstractGameState gameState) {
+        return toString();
+    }
+
+    public String toString() {
         return "RockFall at (" + super.getX() + ", " + super.getY() + ")";
     }
 }

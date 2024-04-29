@@ -57,6 +57,10 @@ public class SaboteurGameState extends AbstractGameState
             add(discardDeck);
             add(goalDeck);
             add(roleDeck);
+            add(gridBoard);
+            add(nuggetDeck);
+            addAll(playerNuggetDecks);
+
         }};
     }
 
@@ -66,12 +70,14 @@ public class SaboteurGameState extends AbstractGameState
         SaboteurGameState copy = new SaboteurGameState(gameParameters.copy(), getNPlayers());
 
         //copying playerDecks
+        copy.playerDecks = new ArrayList<>();
         for(Deck<SaboteurCard> playerDeck : playerDecks)
         {
             copy.playerDecks.add(playerDeck.copy());
         }
 
         //copying brokenToolsDeck
+        copy.brokenToolDecks = new ArrayList<>();
         for(Deck<SaboteurCard> currentDeck : brokenToolDecks)
         {
             copy.brokenToolDecks.add(currentDeck.copy());
@@ -81,6 +87,8 @@ public class SaboteurGameState extends AbstractGameState
         copy.discardDeck = discardDeck.copy();
         copy.goalDeck = goalDeck.copy();
         copy.roleDeck = roleDeck.copy();
+        copy.gridBoard = gridBoard.copy();
+        copy.nuggetDeck = nuggetDeck.copy();
 
         copy.playerNuggetDecks = new ArrayList<>();
         for (PartialObservableDeck<SaboteurCard> playerNuggetDeck : playerNuggetDecks)
@@ -88,6 +96,17 @@ public class SaboteurGameState extends AbstractGameState
             copy.playerNuggetDecks.add(playerNuggetDeck.copy());
         }
 
+        copy.pathCardOptions = new ArrayList<>();
+        for(Vector2D pathCardOption : pathCardOptions)
+        {
+            copy.pathCardOptions.add(pathCardOption.copy());
+        }
+
+        copy.playerNuggetDecks = new ArrayList<>();
+        for(PartialObservableDeck<SaboteurCard> playerNuggetDeck : playerNuggetDecks)
+        {
+            copy.playerNuggetDecks.add(playerNuggetDeck.copy());
+        }
         return copy;
     }
 
@@ -115,6 +134,9 @@ public class SaboteurGameState extends AbstractGameState
                 Objects.equals(discardDeck,that.discardDeck) &&
                 Objects.equals(goalDeck,that.goalDeck) &&
                 Objects.equals(roleDeck,that.roleDeck) &&
-                Objects.equals(gridBoard,that.gridBoard);
+                Objects.equals(gridBoard,that.gridBoard) &&
+                Objects.equals(nuggetDeck,that.nuggetDeck) &&
+                Objects.equals(playerNuggetDecks,that.playerNuggetDecks) &&
+                Objects.equals(pathCardOptions,that.pathCardOptions);
     }
 }

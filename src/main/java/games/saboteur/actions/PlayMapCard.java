@@ -12,24 +12,22 @@ public class PlayMapCard extends AbstractAction {
 
     Vector2D position;
     ActionCard mapCard;
-    int currentID;
     public PlayMapCard(int x, int y, ActionCard mapCard)
     {
         this.position = new Vector2D(x, y);
         this.mapCard = mapCard;
-        this.currentID = -1;
     }
     @Override
     public boolean execute(AbstractGameState gs) {
         SaboteurGameState sgs = (SaboteurGameState) gs;
         int currentPlayer = sgs.getCurrentPlayer();
+
         Deck<SaboteurCard> currentPlayerDeck = sgs.playerDecks.get(currentPlayer);
         currentPlayerDeck.getComponents().remove(mapCard);
         sgs.gridBoard.setElementVisibility(position.getX(), position.getY(), currentPlayer, true);
-        Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
-        currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
 
-        this.currentID = currentPlayer;
+        System.out.println(this);
+        System.out.println(sgs.gridBoard.toString(position.getX(), position.getY()));
         return true;
     }
 
@@ -50,6 +48,10 @@ public class PlayMapCard extends AbstractAction {
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return "Reveals card at (" + position.getX() + ", " + position.getY() + ")" + " by " + currentID;
+        return "Reveals card at (" + position.getX() + ", " + position.getY() + ")";
+    }
+
+    public String toString() {
+        return "Reveals card at (" + position.getX() + ", " + position.getY() + ")";
     }
 }

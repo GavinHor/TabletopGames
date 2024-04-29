@@ -7,18 +7,21 @@ import games.saboteur.SaboteurGameState;
 import games.saboteur.components.ActionCard;
 import games.saboteur.components.SaboteurCard;
 
+import javax.tools.Tool;
+
 public class PlayBrokenToolCard extends AbstractAction {
 
     private final int playerID;
-    private int fromID;
     private final ActionCard brokenToolCard;
 
-    public PlayBrokenToolCard(ActionCard brokenToolCard, int playerID)
+    private final ActionCard.ToolCardType toolType;
+    public PlayBrokenToolCard(ActionCard brokenToolCard, int playerID, ActionCard.ToolCardType toolType)
     {
         this.brokenToolCard = brokenToolCard;
         this.playerID = playerID;
-        this.fromID = -1;
+        this.toolType = toolType;
     }
+
 
     @Override
     public boolean execute(AbstractGameState gs) {
@@ -26,11 +29,7 @@ public class PlayBrokenToolCard extends AbstractAction {
         Deck<SaboteurCard> currentPlayerDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
         currentPlayerDeck.remove(brokenToolCard);
         sgs.brokenToolDecks.get(playerID).add(brokenToolCard);
-
-        Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
-        currentDeck.add(sgs.drawDeck.draw()); //may need to talk about this as well
-
-        this.fromID = sgs.getCurrentPlayer();
+        System.out.println(this);
         return true;
     }
 
@@ -49,8 +48,11 @@ public class PlayBrokenToolCard extends AbstractAction {
         return 0;
     }
 
+    public String toString() {
+        return "Broken " + toolType + " to " + playerID;
+    }
     @Override
     public String getString(AbstractGameState gameState) {
-        return "Broken Tool" + brokenToolCard.toolTypes[0] + fromID + " to " + playerID;
+        return "Broken " + toolType + " to player " + playerID;
     }
 }

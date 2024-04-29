@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PartialObservableGridBoard<T extends Component> extends GridBoard
+public class PartialObservableGridBoard<T extends Component> extends GridBoard<T>
 {
     //visibility of Board for each player
     private boolean[] gridBoardVisibility;
@@ -18,7 +18,7 @@ public class PartialObservableGridBoard<T extends Component> extends GridBoard
 //region Constructor
     public PartialObservableGridBoard(int width, int height, int nPlayers, boolean defaultValue)
     {
-        //WHY IS THIS HEIGHT THEN WIDTH IN THE SUPER AHH
+        //WHY IS THIS HEIGHT THEN WIDTH IN THE SUPER CALL?
         //this.grid = new Component[height][width];
         super(width, height);
 
@@ -36,6 +36,11 @@ public class PartialObservableGridBoard<T extends Component> extends GridBoard
         //filling Visibility of overall grid for each player
         gridBoardVisibility = new boolean[nPlayers];
         Arrays.fill(gridBoardVisibility, defaultValue);
+    }
+
+    public PartialObservableGridBoard(Component[][] grid)
+    {
+        super(grid);
     }
 //endregion
 //--------------------------------------------------------------------------------------------------//
@@ -92,15 +97,71 @@ public class PartialObservableGridBoard<T extends Component> extends GridBoard
     }
 //endregion
 //--------------------------------------------------------------------------------------------------//
+    @Override
+    public PartialObservableGridBoard<T> copy()
+    {
+        PartialObservableGridBoard<T> copy = new PartialObservableGridBoard<>(getGridValues());
+
+        copy.gridBoardVisibility = gridBoardVisibility.clone();
+        return copy;
+    }
 
     @Override
     public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+/*        for(int i = 0; i < gridBoardVisibility.length; i++)
+        {
+            sb.append("Player ").append(i).append(" visibility: ").append(gridBoardVisibility[i]).append("\n");
+        }*/
+        for(int j = 0; j < getHeight(); j++)
+        {
+            for(int k = 0; k < getWidth(); k++)
+            {
+                PathCard pathCard = (PathCard) getElement(k, j);
+                if(pathCard != null)
+                {
+                    sb.append(pathCard.getString());
+                }
+                else
+                {
+                    sb.append("░");
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+
+    public String toString(int x, int y)
     {
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < gridBoardVisibility.length; i++)
         {
             sb.append("Player ").append(i).append(" visibility: ").append(gridBoardVisibility[i]).append("\n");
         }
+        for(int j = 0; j < getHeight(); j++)
+        {
+            for(int k = 0; k < getWidth(); k++)
+            {
+                if(j == y && x == k)
+                {
+                    sb.append("X");
+                    continue;
+                }
+                PathCard pathCard = (PathCard) getElement(k, j);
+                if(pathCard != null)
+                {
+                    sb.append(pathCard.getString());
+                }
+                else
+                {
+                    sb.append("░");
+                }
+            }
+            sb.append("\n");
+        }
         return sb.toString();
     }
+
 }

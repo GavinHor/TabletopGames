@@ -10,19 +10,15 @@ import games.saboteur.components.SaboteurCard;
 public class Pass extends AbstractAction
 {
     private final SaboteurCard card;
-    private int fromID;
     public Pass(SaboteurCard card) {
         this.card = card;
-        this.fromID = -1;
     }
     @Override
     public boolean execute(AbstractGameState gs) {
         SaboteurGameState sgs = (SaboteurGameState) gs;
         Deck<SaboteurCard> currentDeck = sgs.playerDecks.get(sgs.getCurrentPlayer());
         currentDeck.remove(card);
-        currentDeck.add(sgs.drawDeck.draw());
-
-        this.fromID = sgs.getCurrentPlayer();
+        System.out.println(this);
         return true;
     }
 
@@ -44,11 +40,10 @@ public class Pass extends AbstractAction
 
     @Override
     public String getString(AbstractGameState gameState) {
-        return toString();
+        return "Player " + gameState.getCurrentPlayer() + " pass using card " + card.toString() + ".";
     }
 
-    @Override
     public String toString() {
-        return "Player " + fromID + " passed.";
+        return "Pass using card " + card.toString() + ".";
     }
 }

@@ -6,7 +6,6 @@ import games.saboteur.components.ActionCard;
 import games.saboteur.components.PathCard;
 import games.saboteur.components.RoleCard;
 import games.saboteur.components.SaboteurCard;
-import utilities.Vector2D;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import java.util.Objects;
 
 public class SaboteurGameParameters extends TunableParameters
 {
-    public int nPlayers          = 4;
+    public int nPlayers          = 10;
     public int nNuggets          = 27;
     public int nGoalCards        = 3;
     public int nRounds           = 3;
@@ -124,10 +123,10 @@ public class SaboteurGameParameters extends TunableParameters
         ActionCard.ToolCardType lantern = ActionCard.ToolCardType.Lantern;
         ActionCard.ToolCardType pickaxe = ActionCard.ToolCardType.Pickaxe;
 
-        ActionCard.ActionTypeCard brokenTools = ActionCard.ActionTypeCard.BrokenTools;
-        ActionCard.ActionTypeCard fixTools = ActionCard.ActionTypeCard.FixTools;
-        ActionCard.ActionTypeCard map = ActionCard.ActionTypeCard.Map;
-        ActionCard.ActionTypeCard rockFall = ActionCard.ActionTypeCard.RockFall;
+        ActionCard.ActionCardType brokenTools = ActionCard.ActionCardType.BrokenTools;
+        ActionCard.ActionCardType fixTools = ActionCard.ActionCardType.FixTools;
+        ActionCard.ActionCardType map = ActionCard.ActionCardType.Map;
+        ActionCard.ActionCardType rockFall = ActionCard.ActionCardType.RockFall;
 
         actionCardDeck.put(new ActionCard(brokenTools, mineCart), 3);
         actionCardDeck.put(new ActionCard(brokenTools, lantern), 3);
@@ -142,6 +141,11 @@ public class SaboteurGameParameters extends TunableParameters
 
         actionCardDeck.put(new ActionCard(map), 3);
         actionCardDeck.put(new ActionCard(rockFall), 6);
+
+        //Nugget cards
+        goldNuggetDeck.put(new SaboteurCard(3), 4);
+        goldNuggetDeck.put(new SaboteurCard(2), 8);
+        goldNuggetDeck.put(new SaboteurCard(1), 16);
     }
 
     @Override
